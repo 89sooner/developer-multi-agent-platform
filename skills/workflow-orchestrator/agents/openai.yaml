@@ -1,0 +1,3 @@
+interface:
+  display_name: Workflow Orchestrator
+  short_description: Route developer workflow requests into a structured plan.

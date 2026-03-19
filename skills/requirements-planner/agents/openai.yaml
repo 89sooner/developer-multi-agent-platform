@@ -1,0 +1,3 @@
+interface:
+  display_name: Requirements Planner
+  short_description: Convert feature requests into implementation-ready requirements.

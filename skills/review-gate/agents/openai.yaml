@@ -1,0 +1,3 @@
+interface:
+  display_name: Review Gate
+  short_description: Review proposed changes for risks, missing evidence, and readiness.
