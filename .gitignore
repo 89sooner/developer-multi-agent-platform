@@ -6,6 +6,7 @@ __pycache__/
 .env
 .venv/
 .pytest_cache/
+.ruff_cache/
 .mypy_cache/
 .coverage
 htmlcov/
@@ -13,6 +14,8 @@ dist/
 build/
 *.egg-info/
 .runtime/
+*.sqlite3
+*.sqlite3-journal
 .DS_Store
 .idea/
 .vscode/
