@@ -16,11 +16,12 @@
 
 ## 권장 스택
 
-- Python 3.12
+- Python 3.11+
 - FastAPI
 - Pydantic
 - openai-agents
 - Uvicorn
+- uv
 
 ## 저장소 구조
 
@@ -74,10 +75,11 @@ cp .env.example .env
 ### 2. 가상환경 및 패키지 설치
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e .
+uv sync --dev
 ```
+
+`pyproject.toml` 은 Python `>=3.11`을 요구하고, `.python-version`은 `3.11`로 고정되어 있다.
+`uv`를 사용하면 로컬에 Python 3.10만 있더라도 필요한 버전을 자동으로 준비할 수 있다.
 
 ### 3. 서버 실행
 
@@ -88,13 +90,29 @@ make dev
 또는
 
 ```bash
-uvicorn src.app.main:app --reload --host 0.0.0.0 --port 8000
+uv run uvicorn src.app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### 4. 테스트 실행
 
 ```bash
 make test
+```
+
+## Python 버전 이슈 트러블슈팅
+
+Python 3.10에서 아래와 같은 오류가 발생할 수 있다.
+
+```text
+ImportError: cannot import name 'UTC' from 'datetime'
+```
+
+이 프로젝트는 Python 3.11 이상의 `datetime.UTC`를 사용한다. 다음 순서로 해결한다.
+
+```bash
+uv python install 3.11
+uv sync --dev
+make dev
 ```
 
 ## 현재 상태
