@@ -1,0 +1,26 @@
+[
+  {
+    "connector_type": "repo",
+    "provider_name": "missing",
+    "kind": "configuration",
+    "detail": "unsupported repo connector provider: missing"
+  },
+  {
+    "connector_type": "docs",
+    "provider_name": "expired-token",
+    "kind": "auth",
+    "detail": "docs connector token expired"
+  },
+  {
+    "connector_type": "repo",
+    "provider_name": "slow-backend",
+    "kind": "timeout",
+    "detail": "repo connector timed out after 2s"
+  },
+  {
+    "connector_type": "docs",
+    "provider_name": "empty-index",
+    "kind": "empty_result",
+    "detail": "docs connector returned no evidence"
+  }
+]

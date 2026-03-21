@@ -1,0 +1,423 @@
+{
+  "meta": {
+    "name": "ai-developer-workflow-platform",
+    "version": "0.1.0",
+    "last_updated": "2026-03-22",
+    "owner": "ralph",
+    "status": "blocked"
+  },
+  "driver": {
+    "requested_command": "/ralph",
+    "ralph_executable_found": false,
+    "mcp_resource_found": false,
+    "execution_mode": "manual_codex_loop",
+    "note": "No local Ralph runtime was available, so the loop was executed directly in the repository."
+  },
+  "source_documents": [
+    "docs/prd-ai-rewrite-v1.md",
+    "docs/prd-ai-rewrite-dev-review.md",
+    "docs/prd-ralph-v1.md",
+    "docs/prd-ralph-phase0-1-backlog.md"
+  ],
+  "phase_scope": [
+    "Phase 0",
+    "Phase 1"
+  ],
+  "verification": {
+    "test_command": "uv run --with pytest python -m pytest -q -s",
+    "test_result": "16 passed in 0.33s",
+    "phase1_gate_report_path": ".runtime/reports/phase1_gate.json",
+    "phase1_gate": {
+      "scenario_count": 3,
+      "success_rate": 1.0,
+      "evidence_coverage_rate": 1.0,
+      "low_confidence_rule_violations": 0,
+      "p95_latency_ms": 45
+    }
+  },
+  "issues": [
+    {
+      "id": "RLP-P0-01",
+      "title": "Core Workflow Contracts",
+      "phase": "Phase 0",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Structured error envelope, health response model, prompt version fields, and shared response contracts are represented in code and synced into API docs.",
+      "subtasks": [
+        {
+          "id": "RLP-P0-01.1",
+          "title": "Define shared response envelope",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-01.2",
+          "title": "Define error response contract with request_id",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-01.3",
+          "title": "Expose health contract",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "RLP-P0-02",
+      "title": "Run/Trace/Feedback Persistence Foundation",
+      "phase": "Phase 0",
+      "priority": "Must",
+      "size": "L",
+      "status": "done",
+      "notes": "Persistence already existed; this loop added prompt_versions persistence migration and trace metadata export.",
+      "subtasks": [
+        {
+          "id": "RLP-P0-02.1",
+          "title": "Persist run lifecycle fields",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-02.2",
+          "title": "Persist trace payload and export JSON",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-02.3",
+          "title": "Persist feedback records",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-02.4",
+          "title": "Add prompt_versions migration path",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "RLP-P0-03",
+      "title": "Authentication and Repo Scope Enforcement",
+      "phase": "Phase 0",
+      "priority": "Must",
+      "size": "M",
+      "status": "partial",
+      "notes": "Request-scoped request_id, structured 401/403 responses, repo scope enforcement, scope-violation audit logging, and a pluggable local auth-provider seam are implemented. Real SSO/IdP integration remains blocked by external systems.",
+      "subtasks": [
+        {
+          "id": "RLP-P0-03.1",
+          "title": "Attach request_id to every request",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-03.2",
+          "title": "Return structured auth/scope errors",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-03.3",
+          "title": "Introduce pluggable local auth provider interface and default bearer-claims provider (local)",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-03.4",
+          "title": "Add config-driven auth provider selection without external credentials (local)",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-03.5",
+          "title": "Integrate real SSO/IdP claims provider adapter (blocked-external)",
+          "status": "blocked"
+        },
+        {
+          "id": "RLP-P0-03.6",
+          "title": "Define local IdP claim-mapping contract and env keys for future provider wiring (local)",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "RLP-P0-04",
+      "title": "Connector Interface and Evidence Normalization",
+      "phase": "Phase 0",
+      "priority": "Must",
+      "size": "L",
+      "status": "partial",
+      "notes": "Evidence normalization, connector health model, and pluggable local repo/docs connector seams are implemented. Real organization system connectors remain blocked by external dependencies.",
+      "subtasks": [
+        {
+          "id": "RLP-P0-04.1",
+          "title": "Normalize evidence object across repo/docs/issue/ci",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-04.2",
+          "title": "Expose connector health model",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-04.3",
+          "title": "Introduce connector registry/interfaces for repo/docs lookups (local)",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-04.4",
+          "title": "Route repo-context collection through configurable repo/docs connectors (local)",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-04.5",
+          "title": "Add external org repo/docs connector adapters and credentials wiring (blocked-external)",
+          "status": "blocked"
+        },
+        {
+          "id": "RLP-P0-04.6",
+          "title": "Add external org issue/ci connector adapters and credentials wiring (blocked-external)",
+          "status": "blocked"
+        },
+        {
+          "id": "RLP-P0-04.7",
+          "title": "Define connector timeout/auth-failure typed error contract and local fixtures (local)",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "RLP-P0-05",
+      "title": "Orchestrator Execution Skeleton",
+      "phase": "Phase 0",
+      "priority": "Must",
+      "size": "L",
+      "status": "done",
+      "notes": "Manager-pattern workflow execution, trace step recording, degraded-mode fallback, model/skill/prompt metadata recording are all implemented.",
+      "subtasks": [
+        {
+          "id": "RLP-P0-05.1",
+          "title": "Execute step sequence through workflow service",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-05.2",
+          "title": "Record step and tool trace data",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-05.3",
+          "title": "Record model, skill, and prompt versions",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "RLP-P0-06",
+      "title": "Foundation Test Suite and Exit Gate",
+      "phase": "Phase 0",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Auth, scope, persistence, health, structured error, and workflow behavior tests all pass.",
+      "subtasks": [
+        {
+          "id": "RLP-P0-06.1",
+          "title": "Contract and health tests",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-06.2",
+          "title": "Auth and scope tests",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P0-06.3",
+          "title": "Persistence and trace tests",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "RLP-P1-01",
+      "title": "Plan Workflow API Happy Path",
+      "phase": "Phase 1",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Plan endpoint, classification, result persistence, and retrieval are implemented and verified by tests/gate script."
+    },
+    {
+      "id": "RLP-P1-02",
+      "title": "Requirements Normalization Step",
+      "phase": "Phase 1",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Requirements step returns structured output and degraded fallback."
+    },
+    {
+      "id": "RLP-P1-03",
+      "title": "Repo and Docs Read Connectors",
+      "phase": "Phase 1",
+      "priority": "Must",
+      "size": "L",
+      "status": "partial",
+      "notes": "Workspace-backed repo/docs connectors are now routed through pluggable connector seams and remain locally testable. External repo/docs systems remain blocked by unavailable credentials/infrastructure.",
+      "subtasks": [
+        {
+          "id": "RLP-P1-03.1",
+          "title": "Workspace repo connector",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P1-03.2",
+          "title": "Workspace docs connector",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P1-03.3",
+          "title": "Changed files prioritization",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P1-03.4",
+          "title": "Connector registry + provider selection integration tests for workspace behavior (local)",
+          "status": "done"
+        },
+        {
+          "id": "RLP-P1-03.5",
+          "title": "Real repo/docs external connectors (blocked-external)",
+          "status": "blocked"
+        }
+      ]
+    },
+    {
+      "id": "RLP-P1-04",
+      "title": "Implementation Planner Step",
+      "phase": "Phase 1",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Implementation step produces target modules, ordered change plan, and risks."
+    },
+    {
+      "id": "RLP-P1-05",
+      "title": "Summary Composer and Confidence Policy",
+      "phase": "Phase 1",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Final plan response enforces low-confidence behavior when evidence is weak."
+    },
+    {
+      "id": "RLP-P1-06",
+      "title": "Feedback API and Retrieval Hardening",
+      "phase": "Phase 1",
+      "priority": "Should",
+      "size": "S",
+      "status": "done",
+      "notes": "Feedback endpoint and permission-aware run/trace retrieval are implemented and tested."
+    },
+    {
+      "id": "RLP-P1-07",
+      "title": "Golden Scenarios and Phase 1 Release Gate",
+      "phase": "Phase 1",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Gate script executes 3 scenarios, records success/evidence metrics, and writes a JSON report.",
+      "artifacts": [
+        "scripts/phase1_gate.py",
+        ".runtime/reports/phase1_gate.json"
+      ]
+    }
+  ],
+  "loop": [
+    {
+      "iteration": 1,
+      "summary": "Discover Ralph runtime and inputs",
+      "status": "done",
+      "result": "No local ralph executable or MCP resource found."
+    },
+    {
+      "iteration": 2,
+      "summary": "Produce Ralph-oriented PRD and Phase 0/1 backlog",
+      "status": "done",
+      "artifacts": [
+        "docs/prd-ralph-v1.md",
+        "docs/prd-ralph-phase0-1-backlog.md"
+      ]
+    },
+    {
+      "iteration": 3,
+      "summary": "Implement Phase 0/1 contract hardening",
+      "status": "done",
+      "artifacts": [
+        "src/app/main.py",
+        "src/app/contracts/responses.py",
+        "src/app/core/tracing.py",
+        "src/app/services/skill_registry.py",
+        "src/app/services/workflow_service.py",
+        "src/app/storage/repositories.py",
+        "src/app/tools/health.py"
+      ]
+    },
+    {
+      "iteration": 4,
+      "summary": "Run validation and Phase 1 release gate",
+      "status": "done",
+      "artifacts": [
+        "tests/test_health.py",
+        "tests/test_workflows.py",
+        "scripts/phase1_gate.py",
+        ".runtime/reports/phase1_gate.json"
+      ]
+    },
+    {
+      "iteration": 5,
+      "summary": "Sync static API documentation with current implementation",
+      "status": "done",
+      "artifacts": [
+        "docs/api-spec.md",
+        "docs/openapi.yaml"
+      ]
+    },
+    {
+      "iteration": 6,
+      "summary": "Split remaining Ralph work into local vs blocked slices and implement local auth/connector seams",
+      "status": "done",
+      "artifacts": [
+        "prd.json",
+        "docs/prd-ralph-phase0-1-backlog.md",
+        "src/app/core/auth.py",
+        "src/app/core/config.py",
+        "src/app/core/policy.py",
+        "src/app/agents/repo_context.py",
+        "src/app/tools/connectors.py",
+        "src/app/tools/health.py",
+        ".env.example",
+        "tests/test_auth_config.py",
+        "tests/test_auth_providers.py",
+        "tests/test_connectors.py",
+        "tests/test_workflows.py"
+      ]
+    },
+    {
+      "iteration": 7,
+      "summary": "Close remaining local acceptance gaps and finalize blocked-external handoff bookkeeping",
+      "status": "done",
+      "artifacts": [
+        "src/app/core/policy.py",
+        "tests/test_workflows.py",
+        "prd.json",
+        "docs/prd-ralph-phase0-1-backlog.md"
+      ]
+    }
+  ],
+  "next_focus": [
+    "RLP-P0-03.5 implement real SSO/IdP provider adapter once target IdP contract/credentials are available (blocked-external)",
+    "RLP-P0-04.5 add repo/docs external org connector adapters once API endpoints and service accounts are available (blocked-external)",
+    "RLP-P0-04.6 add issue/ci external org connector adapters once API endpoints and service accounts are available (blocked-external)",
+    "RLP-P1-03.5 wire external repo/docs connectors into phase gate scenarios after credentials provisioning (blocked-external)"
+  ],
+  "blockers": [
+    "Real SSO/IdP integration target and claim contract are not available in the repository.",
+    "Real repo/docs/issue/ci systems and credentials are not available in the repository.",
+    "External connector endpoint contracts and service-account provisioning are not available locally."
+  ]
+}

@@ -4,12 +4,12 @@ from time import perf_counter
 from src.app.agents.base import dedupe, load_prompt
 from src.app.contracts.agent_results import RepoContextResult
 from src.app.contracts.requests import BaseWorkflowRequest
+from src.app.core.config import get_settings
 from src.app.core.policy import confidence_from_counts, mask_evidence
 from src.app.core.tracing import TraceRecorder, utc_now
 from src.app.tools.ci_lookup import lookup_ci
-from src.app.tools.docs_search import search_docs
 from src.app.tools.issue_lookup import lookup_issues
-from src.app.tools.repo_search import search_repo
+from src.app.tools.connectors import get_connector_registry
 
 
 def _call_tool(
@@ -54,12 +54,17 @@ def run_repo_context_agent(
     tracer: TraceRecorder | None = None,
     step_name: str = "repo_context",
 ) -> RepoContextResult:
+    settings = get_settings()
+    registry = get_connector_registry()
+    repo_connector = registry.get_repo_connector(settings.repo_connector_provider)
+    docs_connector = registry.get_docs_connector(settings.docs_connector_provider)
+
     repo_evidence = _call_tool(
         tracer,
         step_name,
         "repo_search",
         f"repo_id={request.repo_id}, branch={request.branch}",
-        lambda: search_repo(
+        lambda: repo_connector.search_repo(
             request.repo_id,
             request.branch,
             request.task_text,
@@ -71,7 +76,7 @@ def run_repo_context_agent(
         step_name,
         "docs_search",
         f"repo_id={request.repo_id}",
-        lambda: search_docs(request.repo_id, request.task_text),
+        lambda: docs_connector.search_docs(request.repo_id, request.task_text),
     )
     issue_evidence = _call_tool(
         tracer,

@@ -9,6 +9,7 @@
 - 상태 조회는 `GET /v1/workflows/{run_id}`로 수행한다
 - 동기 실행이 길어지는 경우 추후 `202 Accepted` 비동기 처리로 확장한다
 - 모든 요청은 인증이 필요하다
+- 모든 에러 응답은 `code`, `message`, `request_id`를 포함하는 구조화된 형식을 따른다
 
 ## 2. 공통 헤더
 
@@ -25,7 +26,24 @@
   "status": "completed",
   "trace_id": "trace_01",
   "request_type": "feature",
-  "confidence": "medium"
+  "confidence": "medium",
+  "model_version": "gpt-5.4",
+  "skill_versions": {
+    "workflow-orchestrator": "53310fe17b04"
+  },
+  "prompt_versions": {
+    "workflow-orchestrator": "7ac93a4bf233"
+  }
+}
+```
+
+에러 응답 예시:
+
+```json
+{
+  "code": "FORBIDDEN",
+  "message": "repo scope violation for repo_id=user-service",
+  "request_id": "req_1234abcd"
 }
 ```
 
@@ -37,7 +55,7 @@
 - feature / bugfix / refactor 요청에 대한 영향 범위 및 구현 계획 생성
 
 요청 필드:
-- request_type
+- request_type optional
 - repo_id
 - branch
 - task_text
@@ -53,6 +71,9 @@
 - open_questions
 - evidence
 - confidence
+- model_version
+- skill_versions
+- prompt_versions
 
 ### 4.2 POST /v1/workflows/review
 
@@ -71,6 +92,9 @@
 - risks
 - readiness_verdict
 - evidence
+- model_version
+- skill_versions
+- prompt_versions
 
 ### 4.3 POST /v1/workflows/test-plan
 
@@ -87,6 +111,9 @@
 - regression_targets
 - edge_cases
 - execution_order
+- model_version
+- skill_versions
+- prompt_versions
 
 ### 4.4 GET /v1/workflows/{run_id}
 
@@ -96,6 +123,14 @@
 응답 필드:
 - run_id
 - status
+- primary_intent
+- secondary_intents
+- selected_agents
+- user_id
+- repo_scope
+- model_version
+- skill_versions
+- prompt_versions
 - request
 - result
 - created_at
@@ -109,9 +144,10 @@
 
 응답 필드:
 - trace_id
+- steps
 - spans
-- step_summaries
 - tool_calls
+- metadata
 - error_summary
 
 ### 4.6 POST /v1/feedback
@@ -145,7 +181,9 @@
   },
   "options": {
     "include_tests": true,
-    "language": "ko"
+    "language": "ko",
+    "write_actions": [],
+    "approval_token": null
   }
 }
 ```
@@ -158,6 +196,24 @@
   "status": "completed",
   "trace_id": "trace_01",
   "request_type": "feature",
+  "primary_intent": "feature",
+  "secondary_intents": [],
+  "selected_agents": [
+    "workflow-orchestrator",
+    "requirements-planner",
+    "repo-context-finder",
+    "implementation-planner",
+    "test-strategy-generator",
+    "review-gate",
+    "summary-composer"
+  ],
+  "model_version": "gpt-5.4",
+  "skill_versions": {
+    "workflow-orchestrator": "53310fe17b04"
+  },
+  "prompt_versions": {
+    "workflow-orchestrator": "7ac93a4bf233"
+  },
   "summary": "프로필 저장 경로, 검증 로직, 응답 스키마에 영향이 있다.",
   "impacted_areas": [
     "profile controller",
@@ -195,16 +251,14 @@
 
 ## 6. 에러 코드 초안
 
-- `400_BAD_REQUEST`
-- `401_UNAUTHORIZED`
-- `403_SCOPE_VIOLATION`
-- `404_RUN_NOT_FOUND`
-- `408_CONNECTOR_TIMEOUT`
-- `409_APPROVAL_REQUIRED`
-- `422_SCHEMA_VALIDATION_FAILED`
-- `429_RATE_LIMITED`
-- `500_INTERNAL_ERROR`
-- `503_MODEL_UNAVAILABLE`
+- `BAD_REQUEST`
+- `UNAUTHORIZED`
+- `FORBIDDEN`
+- `NOT_FOUND`
+- `CONFLICT`
+- `VALIDATION_ERROR`
+- `RATE_LIMITED`
+- `INTERNAL_ERROR`
 
 ## 7. 버전 전략
 
