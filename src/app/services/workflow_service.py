@@ -36,7 +36,7 @@ from src.app.core.auth import UserContext
 from src.app.core.config import get_settings
 from src.app.core.policy import enforce_repo_scope, require_approval
 from src.app.core.tracing import TraceRecorder
-from src.app.services.skill_registry import resolve_skill_versions
+from src.app.services.skill_registry import resolve_prompt_versions, resolve_skill_versions
 from src.app.storage.repositories import store
 
 
@@ -139,6 +139,7 @@ class WorkflowService:
         user: UserContext,
         classification: IntentClassification,
         skill_versions: dict[str, str],
+        prompt_versions: dict[str, str],
     ) -> None:
         settings = get_settings()
         store.upsert_run(
@@ -155,6 +156,7 @@ class WorkflowService:
                 "repo_scope": user.repo_scopes,
                 "model_version": settings.openai_model,
                 "skill_versions": skill_versions,
+                "prompt_versions": prompt_versions,
                 "request": request.model_dump(),
                 "result": None,
                 "trace_id": trace_id,
@@ -170,9 +172,15 @@ class WorkflowService:
         user: UserContext,
         classification: IntentClassification,
         skill_versions: dict[str, str],
+        prompt_versions: dict[str, str],
         result,
         tracer: TraceRecorder,
     ) -> None:
+        tracer.set_metadata(
+            model_version=get_settings().openai_model,
+            skill_versions=skill_versions,
+            prompt_versions=prompt_versions,
+        )
         store.upsert_run(
             {
                 "run_id": run_id,
@@ -187,6 +195,7 @@ class WorkflowService:
                 "repo_scope": user.repo_scopes,
                 "model_version": get_settings().openai_model,
                 "skill_versions": skill_versions,
+                "prompt_versions": prompt_versions,
                 "request": request.model_dump(),
                 "result": result.model_dump(),
                 "trace_id": trace_id,
@@ -222,6 +231,7 @@ class WorkflowService:
 
         classification, tracer, run_id, trace_id = self._run_orchestrator(request)
         skill_versions = resolve_skill_versions(classification.selected_agents)
+        prompt_versions = resolve_prompt_versions(classification.selected_agents)
         self._start_run(
             run_id=run_id,
             trace_id=trace_id,
@@ -229,6 +239,7 @@ class WorkflowService:
             user=user,
             classification=classification,
             skill_versions=skill_versions,
+            prompt_versions=prompt_versions,
         )
 
         warnings = self._base_warnings(request.repo_id)
@@ -287,6 +298,7 @@ class WorkflowService:
             review=review,
             model_version=get_settings().openai_model,
             skill_versions=skill_versions,
+            prompt_versions=prompt_versions,
             warnings=warnings,
         )
         tracer.finish_step(
@@ -302,6 +314,7 @@ class WorkflowService:
             user=user,
             classification=classification,
             skill_versions=skill_versions,
+            prompt_versions=prompt_versions,
             result=result,
             tracer=tracer,
         )
@@ -313,6 +326,7 @@ class WorkflowService:
 
         classification, tracer, run_id, trace_id = self._run_orchestrator(request, forced_intent="review")
         skill_versions = resolve_skill_versions(classification.selected_agents)
+        prompt_versions = resolve_prompt_versions(classification.selected_agents)
         self._start_run(
             run_id=run_id,
             trace_id=trace_id,
@@ -320,6 +334,7 @@ class WorkflowService:
             user=user,
             classification=classification,
             skill_versions=skill_versions,
+            prompt_versions=prompt_versions,
         )
 
         warnings = self._base_warnings(request.repo_id)
@@ -357,6 +372,7 @@ class WorkflowService:
             test_strategy=test_strategy,
             model_version=get_settings().openai_model,
             skill_versions=skill_versions,
+            prompt_versions=prompt_versions,
             warnings=warnings,
         )
         tracer.finish_step(
@@ -372,6 +388,7 @@ class WorkflowService:
             user=user,
             classification=classification,
             skill_versions=skill_versions,
+            prompt_versions=prompt_versions,
             result=result,
             tracer=tracer,
         )
@@ -390,6 +407,7 @@ class WorkflowService:
             confidence="high",
         )
         skill_versions = resolve_skill_versions(classification.selected_agents)
+        prompt_versions = resolve_prompt_versions(classification.selected_agents)
 
         class SyntheticTestPlanRequest:
             def __init__(self, payload: TestPlanRequest) -> None:
@@ -410,6 +428,7 @@ class WorkflowService:
             user=user,
             classification=classification,
             skill_versions=skill_versions,
+            prompt_versions=prompt_versions,
         )
 
         warnings = self._base_warnings(request.repo_id)
@@ -429,6 +448,7 @@ class WorkflowService:
             test_strategy=test_strategy,
             model_version=get_settings().openai_model,
             skill_versions=skill_versions,
+            prompt_versions=prompt_versions,
             warnings=warnings,
         )
         tracer.finish_step(summary_handle, status="completed", confidence=result.confidence, output_ref="test_plan_response")
@@ -439,6 +459,7 @@ class WorkflowService:
             user=user,
             classification=classification,
             skill_versions=skill_versions,
+            prompt_versions=prompt_versions,
             result=result,
             tracer=tracer,
         )
@@ -469,6 +490,7 @@ class WorkflowService:
             steps=steps,
             spans=steps,
             tool_calls=tool_calls,
+            metadata=item.get("metadata", {}),
             exported_at=item.get("exported_at"),
             error_summary=item.get("error_summary"),
         )

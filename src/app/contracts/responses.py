@@ -4,7 +4,8 @@ from pydantic import BaseModel, Field
 
 
 ConfidenceLevel = Literal["low", "medium", "high"]
-RunStatus = Literal["queued", "running", "completed", "failed"]
+RunStatus = Literal["queued", "running", "completed", "failed", "canceled"]
+ConnectorHealthStatus = Literal["ok", "degraded", "unconfigured"]
 
 
 class Evidence(BaseModel):
@@ -26,6 +27,7 @@ class BaseWorkflowResponse(BaseModel):
     selected_agents: list[str] = Field(default_factory=list)
     model_version: str
     skill_versions: dict[str, str] = Field(default_factory=dict)
+    prompt_versions: dict[str, str] = Field(default_factory=dict)
     warnings: list[str] = Field(default_factory=list)
     confidence: ConfidenceLevel = "medium"
 
@@ -77,6 +79,7 @@ class RunDetailResponse(BaseModel):
     repo_scope: list[str] = Field(default_factory=list)
     model_version: str
     skill_versions: dict[str, str] = Field(default_factory=dict)
+    prompt_versions: dict[str, str] = Field(default_factory=dict)
     request: dict[str, Any]
     result: dict[str, Any]
     trace_id: str
@@ -113,6 +116,7 @@ class TraceResponse(BaseModel):
     steps: list[TraceStep]
     spans: list[TraceStep]
     tool_calls: list[ToolCallRecord] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
     exported_at: str | None = None
     error_summary: str | None = None
 
@@ -120,3 +124,21 @@ class TraceResponse(BaseModel):
 class FeedbackResponse(BaseModel):
     feedback_id: str
     stored: bool
+
+
+class ConnectorHealth(BaseModel):
+    status: ConnectorHealthStatus
+    detail: str | None = None
+
+
+class HealthResponse(BaseModel):
+    status: Literal["ok", "degraded"]
+    version: str
+    connectors: dict[str, ConnectorHealth] = Field(default_factory=dict)
+
+
+class ErrorResponse(BaseModel):
+    code: str
+    message: str
+    request_id: str
+    detail: Any | None = None

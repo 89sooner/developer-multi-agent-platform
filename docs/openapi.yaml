@@ -145,8 +145,39 @@ components:
       properties:
         status:
           type: string
+          enum: [ok, degraded]
           example: ok
+        version:
+          type: string
+        connectors:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ConnectorHealth"
+      required: [status, version, connectors]
+
+    ConnectorHealth:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded, unconfigured]
+        detail:
+          type: string
+          nullable: true
       required: [status]
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        request_id:
+          type: string
+        detail:
+          nullable: true
+      required: [code, message, request_id]
 
     Evidence:
       type: object
@@ -195,6 +226,14 @@ components:
         language:
           type: string
           default: ko
+        write_actions:
+          type: array
+          items:
+            type: string
+            enum: [create_pr, comment_pr, update_issue, apply_patch, update_docs]
+        approval_token:
+          type: string
+          nullable: true
 
     BaseWorkflowRequest:
       type: object
@@ -212,7 +251,7 @@ components:
           $ref: "#/components/schemas/ArtifactRefs"
         options:
           $ref: "#/components/schemas/RequestOptions"
-      required: [request_type, repo_id, branch, task_text]
+      required: [repo_id, branch, task_text]
 
     PlanRequest:
       allOf:
@@ -251,15 +290,40 @@ components:
           type: string
         status:
           type: string
-          enum: [queued, running, completed, failed]
+          enum: [queued, running, completed, failed, canceled]
         trace_id:
           type: string
         request_type:
           type: string
+        primary_intent:
+          type: string
+        secondary_intents:
+          type: array
+          items:
+            type: string
+        selected_agents:
+          type: array
+          items:
+            type: string
+        model_version:
+          type: string
+        skill_versions:
+          type: object
+          additionalProperties:
+            type: string
+        prompt_versions:
+          type: object
+          additionalProperties:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
         confidence:
           type: string
           enum: [low, medium, high]
-      required: [run_id, status, trace_id, confidence]
+      required:
+        [run_id, status, trace_id, request_type, primary_intent, model_version, confidence]
 
     PlanResponse:
       allOf:
@@ -395,29 +459,97 @@ components:
         completed_at:
           type: string
           nullable: true
+        request_type:
+          type: string
+        primary_intent:
+          type: string
+        secondary_intents:
+          type: array
+          items:
+            type: string
+        selected_agents:
+          type: array
+          items:
+            type: string
+        user_id:
+          type: string
+        repo_scope:
+          type: array
+          items:
+            type: string
+        model_version:
+          type: string
+        skill_versions:
+          type: object
+          additionalProperties:
+            type: string
+        prompt_versions:
+          type: object
+          additionalProperties:
+            type: string
         request:
           type: object
         result:
           type: object
         trace_id:
           type: string
-      required: [run_id, status, created_at, request, trace_id]
+      required: [run_id, status, created_at, request_type, primary_intent, user_id, model_version, request, trace_id]
 
     TraceStep:
       type: object
       properties:
         step_name:
           type: string
+        step_order:
+          type: integer
         status:
+          type: string
+        started_at:
+          type: string
+        ended_at:
           type: string
         latency_ms:
           type: integer
         tool_calls:
           type: integer
+        confidence:
+          type: string
+          enum: [low, medium, high]
+          nullable: true
+        input_ref:
+          type: string
+          nullable: true
+        output_ref:
+          type: string
+          nullable: true
         error_message:
           type: string
           nullable: true
-      required: [step_name, status, latency_ms, tool_calls]
+      required: [step_name, step_order, status, started_at, ended_at, latency_ms, tool_calls]
+
+    ToolCallRecord:
+      type: object
+      properties:
+        step_name:
+          type: string
+        tool_name:
+          type: string
+        status:
+          type: string
+        started_at:
+          type: string
+        ended_at:
+          type: string
+        duration_ms:
+          type: integer
+        input_summary:
+          type: string
+        output_count:
+          type: integer
+        error_message:
+          type: string
+          nullable: true
+      required: [step_name, tool_name, status, started_at, ended_at, duration_ms, input_summary, output_count]
 
     TraceResponse:
       type: object
@@ -428,10 +560,23 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TraceStep"
+        spans:
+          type: array
+          items:
+            $ref: "#/components/schemas/TraceStep"
+        tool_calls:
+          type: array
+          items:
+            $ref: "#/components/schemas/ToolCallRecord"
+        metadata:
+          type: object
+        exported_at:
+          type: string
+          nullable: true
         error_summary:
           type: string
           nullable: true
-      required: [trace_id, steps]
+      required: [trace_id, steps, spans]
 
     FeedbackRequest:
       type: object

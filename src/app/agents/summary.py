@@ -24,6 +24,7 @@ def compose_plan_response(
     review: ReviewResult,
     model_version: str,
     skill_versions: dict[str, str],
+    prompt_versions: dict[str, str],
     warnings: list[str],
 ) -> PlanResponse:
     impacted_areas = dedupe(
@@ -71,6 +72,7 @@ def compose_plan_response(
         selected_agents=classification.selected_agents,
         model_version=model_version,
         skill_versions=skill_versions,
+        prompt_versions=prompt_versions,
         warnings=dedupe(warnings + classification.warnings),
         summary=summary,
         impacted_areas=impacted_areas or ["영향 영역을 특정할 근거가 부족하다."],
@@ -93,6 +95,7 @@ def compose_review_response(
     test_strategy: TestStrategyResult | None,
     model_version: str,
     skill_versions: dict[str, str],
+    prompt_versions: dict[str, str],
     warnings: list[str],
 ) -> ReviewResponse:
     findings: list[ReviewFinding] = []
@@ -142,6 +145,7 @@ def compose_review_response(
         selected_agents=classification.selected_agents,
         model_version=model_version,
         skill_versions=skill_versions,
+        prompt_versions=prompt_versions,
         warnings=dedupe(warnings + classification.warnings),
         summary=summary,
         review_findings=findings,
@@ -161,6 +165,7 @@ def compose_test_plan_response(
     test_strategy: TestStrategyResult,
     model_version: str,
     skill_versions: dict[str, str],
+    prompt_versions: dict[str, str],
     warnings: list[str],
 ) -> TestPlanResponse:
     return TestPlanResponse(
@@ -173,6 +178,7 @@ def compose_test_plan_response(
         selected_agents=classification.selected_agents,
         model_version=model_version,
         skill_versions=skill_versions,
+        prompt_versions=prompt_versions,
         warnings=warnings,
         unit_tests=test_strategy.unit_tests,
         integration_tests=test_strategy.integration_tests,

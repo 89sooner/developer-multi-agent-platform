@@ -43,6 +43,7 @@ class SQLiteStore:
                     repo_scope_json TEXT NOT NULL,
                     model_version TEXT NOT NULL,
                     skill_versions_json TEXT NOT NULL,
+                    prompt_versions_json TEXT NOT NULL DEFAULT '{}',
                     request_json TEXT NOT NULL,
                     result_json TEXT,
                     trace_id TEXT NOT NULL
@@ -64,6 +65,16 @@ class SQLiteStore:
                 );
                 """
             )
+            self._ensure_column(connection, "runs", "prompt_versions_json", "TEXT NOT NULL DEFAULT '{}'")
+
+    @staticmethod
+    def _ensure_column(connection: sqlite3.Connection, table: str, column: str, definition: str) -> None:
+        existing = {
+            row["name"]
+            for row in connection.execute(f"PRAGMA table_info({table})").fetchall()
+        }
+        if column not in existing:
+            connection.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
 
     def upsert_run(self, payload: dict[str, Any]) -> None:
         with self._connect() as connection:
@@ -72,8 +83,8 @@ class SQLiteStore:
                 INSERT INTO runs (
                     run_id, status, created_at, completed_at, request_type, primary_intent,
                     secondary_intents_json, selected_agents_json, user_id, repo_scope_json,
-                    model_version, skill_versions_json, request_json, result_json, trace_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    model_version, skill_versions_json, prompt_versions_json, request_json, result_json, trace_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(run_id) DO UPDATE SET
                     status=excluded.status,
                     completed_at=excluded.completed_at,
@@ -85,6 +96,7 @@ class SQLiteStore:
                     repo_scope_json=excluded.repo_scope_json,
                     model_version=excluded.model_version,
                     skill_versions_json=excluded.skill_versions_json,
+                    prompt_versions_json=excluded.prompt_versions_json,
                     request_json=excluded.request_json,
                     result_json=excluded.result_json,
                     trace_id=excluded.trace_id
@@ -102,6 +114,7 @@ class SQLiteStore:
                     json.dumps(payload.get("repo_scope", []), ensure_ascii=False),
                     payload["model_version"],
                     json.dumps(payload.get("skill_versions", {}), ensure_ascii=False),
+                    json.dumps(payload.get("prompt_versions", {}), ensure_ascii=False),
                     json.dumps(payload["request"], ensure_ascii=False),
                     json.dumps(payload.get("result"), ensure_ascii=False) if payload.get("result") else None,
                     payload["trace_id"],
@@ -146,6 +159,7 @@ class SQLiteStore:
             "repo_scope": json.loads(row["repo_scope_json"]),
             "model_version": row["model_version"],
             "skill_versions": json.loads(row["skill_versions_json"]),
+            "prompt_versions": json.loads(row["prompt_versions_json"] or "{}"),
             "request": json.loads(row["request_json"]),
             "result": json.loads(row["result_json"]) if row["result_json"] else {},
             "trace_id": row["trace_id"],

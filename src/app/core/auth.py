@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Protocol
 from uuid import uuid4
 
 from fastapi import Header, HTTPException, Request, status
@@ -16,6 +17,11 @@ class UserContext:
     roles: list[str]
     request_id: str
     language: str
+
+
+class AuthProvider(Protocol):
+    def build_context(self, raw_token: str, *, request_id: str, language: str) -> UserContext:
+        ...
 
 
 def _parse_claims(raw_token: str) -> dict[str, str]:
@@ -49,6 +55,27 @@ def _build_context(raw_token: str, request_id: str, language: str) -> UserContex
     )
 
 
+@dataclass(slots=True)
+class BearerClaimsAuthProvider:
+    def build_context(self, raw_token: str, *, request_id: str, language: str) -> UserContext:
+        return _build_context(raw_token, request_id=request_id, language=language)
+
+
+AUTH_PROVIDERS: dict[str, AuthProvider] = {
+    "bearer_claims": BearerClaimsAuthProvider(),
+}
+
+
+def get_auth_provider(provider_name: str) -> AuthProvider:
+    provider = AUTH_PROVIDERS.get(provider_name)
+    if provider is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"unsupported auth provider: {provider_name}",
+        )
+    return provider
+
+
 async def get_user_context(
     request: Request,
     authorization: str | None = Header(default=None),
@@ -56,7 +83,7 @@ async def get_user_context(
     x_user_language: str | None = Header(default=None),
 ) -> UserContext:
     settings = get_settings()
-    request_id = x_request_id or f"req_{uuid4().hex[:8]}"
+    request_id = getattr(request.state, "request_id", None) or x_request_id or f"req_{uuid4().hex[:8]}"
     language = x_user_language or settings.default_response_language
 
     if not settings.auth_required:
@@ -77,7 +104,8 @@ async def get_user_context(
         )
 
     raw_token = authorization.removeprefix("Bearer ").strip()
-    context = _build_context(raw_token, request_id=request_id, language=language)
+    provider = get_auth_provider(settings.auth_provider)
+    context = provider.build_context(raw_token, request_id=request_id, language=language)
     rate_limiter.check(context.user_id)
     request.state.user_context = context
     return context

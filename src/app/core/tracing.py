@@ -24,6 +24,12 @@ class TraceRecorder:
         self.steps: list[dict[str, object]] = []
         self.tool_calls: list[dict[str, object]] = []
         self.error_summary: str | None = None
+        self.metadata: dict[str, object] = {}
+
+    def set_metadata(self, **metadata: object) -> None:
+        for key, value in metadata.items():
+            if value is not None:
+                self.metadata[key] = value
 
     def start_step(self, step_name: str, input_ref: str | None = None) -> StepHandle:
         order = len(self.steps) + 1
@@ -107,4 +113,5 @@ class TraceRecorder:
             "spans": self.steps,
             "tool_calls": self.tool_calls,
             "error_summary": self.error_summary,
+            "metadata": self.metadata,
         }

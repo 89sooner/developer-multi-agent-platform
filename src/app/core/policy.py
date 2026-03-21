@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import logging
 import re
 
 from fastapi import HTTPException, status
 
 from src.app.contracts.responses import ConfidenceLevel, Evidence
 from src.app.core.auth import UserContext
+
+logger = logging.getLogger(__name__)
 
 SECRET_PATTERNS = [
     re.compile(r"(?i)(api[_-]?key|token|password|secret)\s*[:=]\s*['\"]?([A-Za-z0-9_\-]{6,})"),
@@ -32,6 +35,16 @@ def mask_evidence(evidence: list[Evidence]) -> list[Evidence]:
 def enforce_repo_scope(user: UserContext, repo_id: str) -> None:
     if "*" in user.repo_scopes or repo_id in user.repo_scopes:
         return
+    logger.warning(
+        "repo scope violation",
+        extra={
+            "event": "repo_scope_violation",
+            "user_id": user.user_id,
+            "repo_id": repo_id,
+            "allowed_repo_scopes": user.repo_scopes,
+            "request_id": user.request_id,
+        },
+    )
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
         detail=f"repo scope violation for repo_id={repo_id}",
