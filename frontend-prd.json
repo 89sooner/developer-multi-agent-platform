@@ -1,0 +1,607 @@
+{
+  "meta": {
+    "name": "frontend-operator-console",
+    "version": "0.1.0",
+    "last_updated": "2026-03-22",
+    "owner": "ralph",
+    "status": "in_progress",
+    "current_milestone": "Phase 2 complete",
+    "next_milestone": "Phase 3 planned"
+  },
+  "driver": {
+    "requested_command": "pre-implementation frontend Ralph tracking",
+    "ralph_executable_found": false,
+    "mcp_resource_found": false,
+    "execution_mode": "manual_codex_loop",
+    "note": "This tracker began as a pre-implementation ledger and now records completed Phase 0/1/2 execution plus the next planned frontend milestone."
+  },
+  "source_documents": [
+    "docs/frontend-prd-v1.md",
+    "docs/frontend-ia-implementation-plan-v1.md",
+    "docs/frontend-prd-ralph-v1.md",
+    "docs/frontend-phase0-1-backlog.md",
+      "docs/frontend-phase1-release-checklist.md",
+      "docs/frontend-phase2-release-checklist.md"
+    ],
+  "phase_scope": [
+    "Phase 0",
+    "Phase 1",
+    "Phase 2",
+    "Phase 3"
+  ],
+  "verification": {
+    "test_command": "npm --prefix frontend test && npm --prefix frontend run build",
+    "diagnostic_commands": [
+      "lsp_diagnostics frontend/src/routes/WorkflowsNewRoute.tsx",
+      "lsp_diagnostics frontend/src/routes/RunDetailRoute.tsx",
+      "lsp_diagnostics frontend/src/test/run-route.test.tsx"
+    ],
+    "test_result": "frontend tests: 25 passed; frontend build: success; TypeScript LSP diagnostics: clean",
+    "phase0_gate": {
+      "status": "done",
+      "criteria": [
+        "app shell and route structure are implemented",
+        "bearer token input and protected request handling work",
+        "structured error parser is shared across routes",
+        "foundation test harness and route-entry fixtures exist"
+      ]
+    },
+    "phase1_gate": {
+      "status": "done",
+      "criteria": [
+        "plan form submission works end to end",
+        "validation and policy recovery for 409, 422, 401, and 403 are covered",
+        "run detail renders semantic plan sections",
+        "run detail supports direct-entry and refresh from GET /v1/workflows/{run_id}",
+        "degraded success and hard errors are clearly distinguished",
+        "raw payload and metadata inspectability are included in the release gate",
+        "phase 1 release checklist is documented"
+      ]
+    },
+    "phase2_gate": {
+      "status": "done",
+      "criteria": [
+        "review form and result rendering work end to end",
+        "test-plan prefill and manual entry both work",
+        "review and test-plan run detail preserve shared inspectability surfaces",
+        "shared Phase 2 release-gate tests are present",
+        "phase 2 release checklist is documented"
+      ]
+    }
+  },
+  "issues": [
+    {
+      "id": "FRLP-P0-01",
+      "title": "App Shell and Route Foundation",
+      "phase": "Phase 0",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Frontend workspace now ships a shared shell, top bar, nav, and direct-entry route scaffolds under `frontend/src`.",
+      "subtasks": [
+        {
+          "id": "FRLP-P0-01.1",
+          "title": "Add app shell layout with top bar and navigation",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P0-01.2",
+          "title": "Register /workflows/new, /runs/:runId, /runs/:runId/trace, /health routes",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P0-01.3",
+          "title": "Support direct-entry route shell rendering",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "FRLP-P0-02",
+      "title": "Typed API Client and Structured Error Normalization",
+      "phase": "Phase 0",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Typed TS mirrors and a shared fetch/error layer now cover health, workflow, trace, and feedback clients.",
+      "subtasks": [
+        {
+          "id": "FRLP-P0-02.1",
+          "title": "Create typed workflow, run, trace, feedback, and health client functions",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P0-02.2",
+          "title": "Normalize structured API errors into shared client shape",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P0-02.3",
+          "title": "Share error parsing between health and protected endpoints",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "FRLP-P0-03",
+      "title": "Session Bearer Token Handling",
+      "phase": "Phase 0",
+      "priority": "Must",
+      "size": "S",
+      "status": "done",
+      "notes": "SessionProvider and token dialog persist bearer token and request language in sessionStorage only.",
+      "subtasks": [
+        {
+          "id": "FRLP-P0-03.1",
+          "title": "Add token input and edit/reset UI",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P0-03.2",
+          "title": "Inject Authorization header for protected requests",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P0-03.3",
+          "title": "Provide 401 recovery flow without long-lived insecure storage",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "FRLP-P0-04",
+      "title": "Shared Screen State Primitives and Global Status UX",
+      "phase": "Phase 0",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Shared loading, empty, error, and degraded banners are integrated into health and protected route shells.",
+      "subtasks": [
+        {
+          "id": "FRLP-P0-04.1",
+          "title": "Create shared loading and empty-state primitives",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P0-04.2",
+          "title": "Create shared API error and request_id display banner",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P0-04.3",
+          "title": "Create degraded-success warning treatment distinct from hard failure",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "FRLP-P0-05",
+      "title": "Frontend Test Harness and Contract Fixtures",
+      "phase": "Phase 0",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Vitest + RTL + MSW harness now verifies route direct-entry, token state, health, run, and trace shells.",
+      "subtasks": [
+        {
+          "id": "FRLP-P0-05.1",
+          "title": "Set up route/component/integration test harness",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P0-05.2",
+          "title": "Add mocked backend contract fixtures",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P0-05.3",
+          "title": "Add direct-entry route test utilities and smoke suite",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "FRLP-P1-01",
+      "title": "Plan Workflow Form Happy Path",
+      "phase": "Phase 1",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "`/workflows/new` now submits real plan requests with optional artifacts/options and transitions to run detail on success.",
+      "subtasks": [
+        {
+          "id": "FRLP-P1-01.1",
+          "title": "Build plan form core fields for repo_id, branch, and task_text",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P1-01.2",
+          "title": "Add optional artifact and request option inputs",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P1-01.3",
+          "title": "Submit plan request and transition to run detail on success",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "FRLP-P1-02",
+      "title": "Plan Validation and Policy Error Recovery",
+      "phase": "Phase 1",
+      "priority": "Must",
+      "size": "S",
+      "status": "done",
+      "notes": "Plan form now keeps draft state through 409/422/401/403 responses and surfaces request IDs and recovery copy.",
+      "subtasks": [
+        {
+          "id": "FRLP-P1-02.1",
+          "title": "Add 409 approval conflict guidance and recovery",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P1-02.2",
+          "title": "Add 422 field-level validation rendering",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P1-02.3",
+          "title": "Add 401/403 recovery and request_id visibility without clearing input",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "FRLP-P1-03",
+      "title": "Run Detail Route and Nested Result Mapping",
+      "phase": "Phase 1",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Run detail now rebuilds from GET payloads, adapts nested result data, and stays direct-entry safe.",
+      "subtasks": [
+        {
+          "id": "FRLP-P1-03.1",
+          "title": "Fetch run detail from /runs/:runId route",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P1-03.2",
+          "title": "Map top-level metadata and nested RunDetailResponse.result together",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P1-03.3",
+          "title": "Support refresh and direct-entry restoration from fetched payload alone",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "FRLP-P1-04",
+      "title": "Plan Result Rendering and Evidence Inspection",
+      "phase": "Phase 1",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Run detail now renders overview, semantic plan sections, evidence cards, and metadata instead of only raw JSON.",
+      "subtasks": [
+        {
+          "id": "FRLP-P1-04.1",
+          "title": "Render overview with status, confidence, intents, and agents",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P1-04.2",
+          "title": "Render semantic plan sections for summary, impacted_areas, implementation_plan, tests, risks, and open_questions",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P1-04.3",
+          "title": "Render evidence cards and empty evidence state",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "FRLP-P1-05",
+      "title": "Degraded Success and Structured Error UX",
+      "phase": "Phase 1",
+      "priority": "Must",
+      "size": "S",
+      "status": "done",
+      "notes": "Degraded success, protected-route recovery, and distinct 401/403/404 treatments are exercised in route tests.",
+      "subtasks": [
+        {
+          "id": "FRLP-P1-05.1",
+          "title": "Show degraded banner when warnings and reduced confidence are present",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P1-05.2",
+          "title": "Differentiate 403, 404, and 401 states on run detail",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P1-05.3",
+          "title": "Add 401 token recovery for direct-entry and refresh on protected run route",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "FRLP-P1-06",
+      "title": "Raw Payload and Metadata Inspection Hardening",
+      "phase": "Phase 1",
+      "priority": "Must",
+      "size": "S",
+      "status": "done",
+      "notes": "Raw payload drawer and extended metadata panel are now part of the run-detail experience and release gate.",
+      "subtasks": [
+        {
+          "id": "FRLP-P1-06.1",
+          "title": "Add raw request/result payload drawer",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P1-06.2",
+          "title": "Expose run_id, trace_id, model_version, skill_versions, prompt_versions, user_id, and repo_scope",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P1-06.3",
+          "title": "Add component tests for payload drawer and metadata visibility",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "FRLP-P1-07",
+      "title": "Phase 1 Golden Path and Release Verification",
+      "phase": "Phase 1",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Route and integration tests now cover submit happy path, direct entry, degraded mode, auth/policy errors, and inspectability; release checklist is documented.",
+      "subtasks": [
+        {
+          "id": "FRLP-P1-07.1",
+          "title": "Verify plan submit to run-detail golden path",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P1-07.2",
+          "title": "Verify direct-entry and refresh restoration from GET /v1/workflows/{run_id}",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P1-07.3",
+          "title": "Verify degraded success, 401 recovery, and inspectability release gate",
+          "status": "done"
+        }
+      ],
+      "artifacts": [
+        "docs/frontend-phase0-1-backlog.md",
+        "docs/frontend-phase1-release-checklist.md"
+      ]
+    },
+    {
+      "id": "FRLP-P2-01",
+      "title": "Review Workflow Form and Validation",
+      "phase": "Phase 2",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "`/workflows/new?mode=review` now validates context and submits review requests without regressing the plan flow.",
+      "subtasks": [
+        {
+          "id": "FRLP-P2-01.1",
+          "title": "Add mode-aware review form UI and diff_text input",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P2-01.2",
+          "title": "Block review submit unless diff_text, changed_files, or pr_url is present",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P2-01.3",
+          "title": "Submit review request and preserve auth/policy error recovery",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "FRLP-P2-02",
+      "title": "Review Result Rendering",
+      "phase": "Phase 2",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Run detail now branches into review-specific rendering with verdict, findings, evidence, and degraded-state treatment.",
+      "subtasks": [
+        {
+          "id": "FRLP-P2-02.1",
+          "title": "Detect review-shaped run detail payloads",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P2-02.2",
+          "title": "Render review findings, missing tests, risks, and readiness verdict",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P2-02.3",
+          "title": "Keep evidence, metadata, raw payloads, and degraded banner available for review runs",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "FRLP-P2-03",
+      "title": "Test-Plan Form, Prefill, and Result Rendering",
+      "phase": "Phase 2",
+      "priority": "Must",
+      "size": "M",
+      "status": "done",
+      "notes": "Test-plan mode now supports manual entry plus memory-only prefill from a plan result and renders the returned test-plan sections in run detail.",
+      "subtasks": [
+        {
+          "id": "FRLP-P2-03.1",
+          "title": "Add test-plan mode form using only backend-supported fields",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P2-03.2",
+          "title": "Prefill implementation_plan and impacted_areas from plan run detail navigation state",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P2-03.3",
+          "title": "Render unit, integration, regression, edge-case, and execution-order sections for test-plan runs",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "FRLP-P2-04",
+      "title": "Phase 2 Shared Release Gate and Repo Hygiene",
+      "phase": "Phase 2",
+      "priority": "Must",
+      "size": "S",
+      "status": "done",
+      "notes": "Phase 2 adds shared release-gate tests, a release checklist, tracker updates, and frontend-specific ignore entries.",
+      "subtasks": [
+        {
+          "id": "FRLP-P2-04.1",
+          "title": "Add shared release-gate tests for plan regression, review flow, and test-plan prefill",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P2-04.2",
+          "title": "Document the Phase 2 release checklist",
+          "status": "done"
+        },
+        {
+          "id": "FRLP-P2-04.3",
+          "title": "Ignore frontend-generated artifacts in .gitignore",
+          "status": "done"
+        }
+      ]
+    }
+  ],
+  "loop": [
+    {
+      "iteration": 1,
+      "summary": "Analyze backend-supported frontend surface and define operator-console scope",
+      "status": "done",
+      "artifacts": [
+        "docs/frontend-prd-v1.md"
+      ]
+    },
+    {
+      "iteration": 2,
+      "summary": "Split frontend scope into IA, wireframe, component, and implementation-plan detail",
+      "status": "done",
+      "artifacts": [
+        "docs/frontend-ia-implementation-plan-v1.md"
+      ]
+    },
+    {
+      "iteration": 3,
+      "summary": "Create Ralph-oriented frontend PRD with phases, user stories, and acceptance criteria",
+      "status": "done",
+      "artifacts": [
+        "docs/frontend-prd-ralph-v1.md"
+      ]
+    },
+    {
+      "iteration": 4,
+      "summary": "Decompose frontend Phase 0/1 into executable issue backlog",
+      "status": "done",
+      "artifacts": [
+        "docs/frontend-phase0-1-backlog.md"
+      ]
+    },
+    {
+      "iteration": 5,
+      "summary": "Create pre-implementation frontend progress ledger in prd.json style",
+      "status": "done",
+      "artifacts": [
+        "frontend-prd.json"
+      ]
+    },
+    {
+      "iteration": 6,
+      "summary": "Implement frontend Phase 0 shell, typed client foundation, session token handling, and tests",
+      "status": "done",
+      "artifacts": [
+        "frontend/package.json",
+        "frontend/src/app/App.tsx",
+        "frontend/src/app/router.tsx",
+        "frontend/src/shell/AppShell.tsx",
+        "frontend/src/routes/HealthRoute.tsx",
+        "frontend/src/routes/RunDetailRoute.tsx",
+        "frontend/src/routes/RunTraceRoute.tsx",
+        "frontend/src/session/SessionProvider.tsx",
+        "frontend/src/api/http.ts",
+        "frontend/src/test/renderApp.tsx",
+        "frontend/src/test/health-route.test.tsx",
+        "frontend/src/test/run-route.test.tsx",
+        "frontend/src/test/trace-route.test.tsx"
+      ]
+    },
+    {
+      "iteration": 7,
+      "summary": "Implement frontend Phase 1 plan flow, semantic run detail, inspectability, and release gate",
+      "status": "done",
+      "artifacts": [
+        "frontend/src/routes/WorkflowsNewRoute.tsx",
+        "frontend/src/routes/RunDetailRoute.tsx",
+        "frontend/src/components/workflows/PlanRequestForm.tsx",
+        "frontend/src/components/workflows/PlanResultPanel.tsx",
+        "frontend/src/components/workflows/RawJsonDrawer.tsx",
+        "frontend/src/test/workflows-new-route.test.tsx",
+        "frontend/src/test/run-route.test.tsx",
+        "docs/frontend-phase1-release-checklist.md"
+      ]
+    },
+    {
+      "iteration": 8,
+      "summary": "Close Phase 1 release evidence gaps with explicit 403/404 and inspectability tests",
+      "status": "done",
+      "artifacts": [
+        "frontend/src/test/run-route.test.tsx",
+        "docs/frontend-phase1-release-checklist.md",
+        "frontend-prd.json"
+      ]
+    },
+    {
+      "iteration": 9,
+      "summary": "Implement frontend Phase 2 review/test-plan flows, shared release gate, and repo hygiene",
+      "status": "done",
+      "artifacts": [
+        "frontend/src/components/workflows/WorkflowModeSwitcher.tsx",
+        "frontend/src/components/workflows/ReviewRequestForm.tsx",
+        "frontend/src/components/workflows/TestPlanRequestForm.tsx",
+        "frontend/src/components/workflows/ReviewResultPanel.tsx",
+        "frontend/src/components/workflows/TestPlanResultPanel.tsx",
+        "frontend/src/routes/WorkflowsNewRoute.tsx",
+        "frontend/src/routes/RunDetailRoute.tsx",
+        "frontend/src/test/workflows-new-route.test.tsx",
+        "frontend/src/test/run-route.test.tsx",
+        "frontend/src/test/workflow-release-gate.test.tsx",
+        "docs/frontend-phase2-release-checklist.md",
+        ".gitignore"
+      ]
+    }
+  ],
+  "next_focus": [
+    "Phase 3 / Trace route: replace raw trace payload scaffold with timeline and tool-call rendering",
+    "Phase 3 / Health polish: evolve connector health cards and copy without regressing existing health route coverage",
+    "Phase 3 / Feedback: add inline run-detail feedback submission with success and repeat-submit guard",
+    "Phase 3 / Shared release gate: extend direct-entry and degraded-state coverage across trace, health, and feedback flows"
+  ],
+  "blockers": []
+}
