@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 interface SessionState {
   bearerToken: string;
@@ -37,6 +37,22 @@ function loadSession() {
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState(loadSession);
 
+  const setBearerToken = useCallback((token: string) => {
+    setSession((current) => ({ ...current, bearerToken: token }));
+  }, []);
+
+  const clearBearerToken = useCallback(() => {
+    setSession((current) => ({ ...current, bearerToken: "" }));
+  }, []);
+
+  const setLanguage = useCallback((language: string) => {
+    setSession((current) => ({ ...current, language }));
+  }, []);
+
+  const setLastRunId = useCallback((runId: string | null) => {
+    setSession((current) => ({ ...current, lastRunId: runId }));
+  }, []);
+
   useEffect(() => {
     window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session));
   }, [session]);
@@ -46,12 +62,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       bearerToken: session.bearerToken,
       language: session.language,
       lastRunId: session.lastRunId,
-      setBearerToken: (token: string) => setSession((current) => ({ ...current, bearerToken: token })),
-      clearBearerToken: () => setSession((current) => ({ ...current, bearerToken: "" })),
-      setLanguage: (language: string) => setSession((current) => ({ ...current, language })),
-      setLastRunId: (runId: string | null) => setSession((current) => ({ ...current, lastRunId: runId }))
+      setBearerToken,
+      clearBearerToken,
+      setLanguage,
+      setLastRunId
     }),
-    [session]
+    [session.bearerToken, session.language, session.lastRunId, setBearerToken, clearBearerToken, setLanguage, setLastRunId]
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
