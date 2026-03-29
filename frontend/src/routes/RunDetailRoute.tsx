@@ -8,7 +8,7 @@ import { ApiErrorBanner } from "../components/state/ApiErrorBanner";
 import { EmptyState } from "../components/state/EmptyState";
 import { LoadingState } from "../components/state/LoadingState";
 import { WarningsBanner } from "../components/state/WarningsBanner";
-import { type ClientError } from "../api/errors";
+import { normalizeClientError, type ClientError } from "../api/errors";
 import { useSession } from "../session/SessionProvider";
 import { adaptPlanRunDetail, adaptReviewRunDetail, adaptTestPlanRunDetail, isPlanLikeRunDetail, isReviewLikeRunDetail, isTestPlanLikeRunDetail } from "../components/workflows/runDetailAdapter";
 import { RunOverviewCard } from "../components/workflows/RunOverviewCard";
@@ -18,13 +18,6 @@ import { MetadataPanel } from "../components/workflows/MetadataPanel";
 import { RawJsonDrawer } from "../components/workflows/RawJsonDrawer";
 import { ReviewResultPanel } from "../components/workflows/ReviewResultPanel";
 import { TestPlanResultPanel } from "../components/workflows/TestPlanResultPanel";
-
-function toClientError(error: unknown): ClientError | null {
-  if (error && typeof error === "object" && "clientError" in error) {
-    return (error as { clientError: ClientError }).clientError;
-  }
-  return null;
-}
 
 export function RunDetailRoute() {
   const navigate = useNavigate();
@@ -40,6 +33,8 @@ export function RunDetailRoute() {
 
   useEffect(() => {
     let active = true;
+    setData(null);
+    setError(null);
     getRun(runId, requestContext)
       .then((response) => {
         if (!active) {
@@ -53,7 +48,7 @@ export function RunDetailRoute() {
         if (!active) {
           return;
         }
-        setError(toClientError(candidate));
+        setError(normalizeClientError(candidate, `Unable to load run ${runId}`));
       });
     return () => {
       active = false;

@@ -1,8 +1,12 @@
 import { screen } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 import userEvent from "@testing-library/user-event";
+import { waitFor } from "@testing-library/react";
 
 import { renderDirectEntry } from "./directEntry";
+import { server } from "./server";
+import { runDetailFixture } from "./fixtures/contracts";
 
 describe("run detail route", () => {
   it("requires auth for direct-entry protected routes", async () => {
@@ -56,6 +60,64 @@ describe("run detail route", () => {
     expect(screen.getByText("Result payload")).toBeInTheDocument();
     expect(screen.getByText(/"task_text": "phase 0 shell"/)).toBeInTheDocument();
     expect(screen.getByText(/"summary": "Phase 1 shell baseline"/)).toBeInTheDocument();
+  });
+
+  it("fetches run detail only once after storing lastRunId", async () => {
+    let runFetchCount = 0;
+
+    server.use(
+      http.get("/v1/workflows/:runId", ({ params, request }) => {
+        runFetchCount += 1;
+
+        const auth = request.headers.get("Authorization");
+        if (!auth) {
+          return HttpResponse.json({ code: "UNAUTHORIZED", message: "missing bearer token", request_id: "req_auth01" }, { status: 401 });
+        }
+
+        return HttpResponse.json({ ...runDetailFixture, run_id: String(params.runId) });
+      })
+    );
+
+    window.sessionStorage.setItem(
+      "developer-multi-agent-platform/session",
+      JSON.stringify({
+        bearerToken: "sub=alice;repos=developer-multi-agent-platform;roles=developer",
+        language: "ko",
+        lastRunId: null
+      })
+    );
+
+    renderDirectEntry("/runs/run_123");
+
+    expect(await screen.findByText("Plan result")).toBeInTheDocument();
+
+    await waitFor(
+      async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(runFetchCount).toBe(1);
+      },
+      { timeout: 200 }
+    );
+  });
+
+  it("shows a generic error banner when the run fetch fails before an HTTP response", async () => {
+    server.use(
+      http.get("/v1/workflows/:runId", () => HttpResponse.error())
+    );
+
+    window.sessionStorage.setItem(
+      "developer-multi-agent-platform/session",
+      JSON.stringify({
+        bearerToken: "sub=alice;repos=developer-multi-agent-platform;roles=developer",
+        language: "ko",
+        lastRunId: null
+      })
+    );
+
+    renderDirectEntry("/runs/run_123");
+
+    expect(await screen.findByText("REQUEST_FAILED")).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent("Failed to fetch");
   });
 
   it("shows forbidden state for protected runs outside scope", async () => {
